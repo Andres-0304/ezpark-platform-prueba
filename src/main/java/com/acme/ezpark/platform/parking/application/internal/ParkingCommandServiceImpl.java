@@ -2,6 +2,7 @@ package com.acme.ezpark.platform.parking.application.internal;
 
 import com.acme.ezpark.platform.parking.domain.model.aggregates.Parking;
 import com.acme.ezpark.platform.parking.domain.model.commands.CreateParkingCommand;
+import com.acme.ezpark.platform.parking.domain.model.commands.DeleteParkingCommand;
 import com.acme.ezpark.platform.parking.domain.model.commands.UpdateParkingCommand;
 import com.acme.ezpark.platform.parking.domain.services.ParkingCommandService;
 import com.acme.ezpark.platform.parking.infrastructure.persistence.jpa.repositories.ParkingRepository;
@@ -61,5 +62,21 @@ public class ParkingCommandServiceImpl implements ParkingCommandService {
                 parkingRepository.save(parking);
                 return parking;
             });
+    }
+
+    @Override
+    public boolean handle(DeleteParkingCommand command) {
+        return deleteParking(command.parkingId());
+    }
+
+    @Override
+    public boolean deleteParking(Long parkingId) {
+        return parkingRepository.findById(parkingId)
+            .map(parking -> {
+                parking.deactivateParking();
+                parkingRepository.save(parking);
+                return true;
+            })
+            .orElse(false);
     }
 }

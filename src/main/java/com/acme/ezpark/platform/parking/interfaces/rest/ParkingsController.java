@@ -1,5 +1,6 @@
 package com.acme.ezpark.platform.parking.interfaces.rest;
 
+import com.acme.ezpark.platform.parking.domain.model.commands.DeleteParkingCommand;
 import com.acme.ezpark.platform.parking.domain.model.queries.GetParkingByIdQuery;
 import com.acme.ezpark.platform.parking.domain.model.queries.GetParkingsByLocationQuery;
 import com.acme.ezpark.platform.parking.domain.model.queries.GetParkingsByOwnerIdQuery;
@@ -7,10 +8,14 @@ import com.acme.ezpark.platform.parking.domain.services.ParkingCommandService;
 import com.acme.ezpark.platform.parking.domain.services.ParkingQueryService;
 import com.acme.ezpark.platform.parking.interfaces.rest.resources.CreateParkingResource;
 import com.acme.ezpark.platform.parking.interfaces.rest.resources.ParkingResource;
+import com.acme.ezpark.platform.parking.interfaces.rest.resources.UpdateParkingResource;
 import com.acme.ezpark.platform.parking.interfaces.rest.transform.CreateParkingCommandFromResourceAssembler;
 import com.acme.ezpark.platform.parking.interfaces.rest.transform.ParkingResourceFromEntityAssembler;
+import com.acme.ezpark.platform.parking.interfaces.rest.transform.UpdateParkingCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -92,5 +97,43 @@ public class ParkingsController {
             .toList();
         
         return ResponseEntity.ok(parkingResources);
+    }
+
+    @PutMapping("/parkings/{parkingId}")
+    @Operation(summary = "Update parking", description = "Update parking information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Parking updated"),
+            @ApiResponse(responseCode = "404", description = "Parking not found")
+    })
+    public ResponseEntity<ParkingResource> updateParking(
+            @Parameter(description = "Parking ID") @PathVariable Long parkingId,
+            @RequestBody UpdateParkingResource resource) {
+        var updateParkingCommand = UpdateParkingCommandFromResourceAssembler.toCommandFromResource(parkingId, resource);
+        var parking = parkingCommandService.handle(updateParkingCommand);
+        
+        if (parking.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        var parkingResource = ParkingResourceFromEntityAssembler.toResourceFromEntity(parking.get());
+        return ResponseEntity.ok(parkingResource);
+    }
+
+    @DeleteMapping("/parkings/{parkingId}")
+    @Operation(summary = "Delete parking", description = "Delete a parking (soft delete)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Parking deleted"),
+            @ApiResponse(responseCode = "404", description = "Parking not found")
+    })
+    public ResponseEntity<Void> deleteParking(
+            @Parameter(description = "Parking ID") @PathVariable Long parkingId) {
+        var deleteParkingCommand = new DeleteParkingCommand(parkingId);
+        var result = parkingCommandService.handle(deleteParkingCommand);
+        
+        if (!result) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        return ResponseEntity.noContent().build();
     }
 }
