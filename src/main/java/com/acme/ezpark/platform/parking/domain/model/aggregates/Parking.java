@@ -209,6 +209,10 @@ public class Parking {
         this.updatedAt = new java.util.Date();
     }
     
+    public void deactivate() {
+        this.deactivateParking();
+    }
+    
     public void activateParking() {
         this.isActive = true;
         this.updatedAt = new java.util.Date();

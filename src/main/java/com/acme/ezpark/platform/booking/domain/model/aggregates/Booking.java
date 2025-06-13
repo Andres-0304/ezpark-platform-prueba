@@ -180,7 +180,12 @@ public class Booking {
             this.updatedAt = new java.util.Date();
         }
     }
-      public boolean isActive() {
+    
+    public void cancel() {
+        this.cancelBooking("User role removal - automatic cancellation");
+    }
+    
+    public boolean isActive() {
         return status == BookingStatus.CONFIRMED || status == BookingStatus.ACTIVE;
     }
     

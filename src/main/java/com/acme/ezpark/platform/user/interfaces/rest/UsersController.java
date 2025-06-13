@@ -1,6 +1,9 @@
 package com.acme.ezpark.platform.user.interfaces.rest;
 
 import com.acme.ezpark.platform.user.domain.model.queries.GetUserByIdQuery;
+import com.acme.ezpark.platform.user.domain.model.queries.GetUserByEmailQuery;
+import com.acme.ezpark.platform.user.domain.model.commands.RemoveUserRoleCommand;
+import com.acme.ezpark.platform.user.domain.model.valueobjects.UserRole;
 import com.acme.ezpark.platform.user.domain.services.UserCommandService;
 import com.acme.ezpark.platform.user.domain.services.UserQueryService;
 import com.acme.ezpark.platform.user.interfaces.rest.resources.*;
@@ -84,4 +87,96 @@ public class UsersController {
         var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
         return ResponseEntity.ok(userResource);
     }
+    
+    @PutMapping("/upgrade-role")
+    @Operation(summary = "Upgrade user role", description = "Upgrade user role from HOST to BOTH or GUEST to BOTH when user wants to access features from other app")
+    public ResponseEntity<UserResource> upgradeUserRole(@RequestBody UpgradeUserRoleResource resource) {
+        var upgradeCommand = UpgradeUserRoleCommandFromResourceAssembler.toCommandFromResource(resource);
+        var user = userCommandService.handle(upgradeCommand);
+        
+        if (user.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
+        return ResponseEntity.ok(userResource);
+    }
+    
+    @PostMapping("/check-or-upgrade")
+    @Operation(summary = "Check user existence or upgrade role", description = "Check if user exists by email, if exists and has different role, upgrade to BOTH")
+    public ResponseEntity<?> checkOrUpgradeUser(@RequestBody UpgradeUserRoleResource resource) {
+        // First try to find existing user
+        var existingUserQuery = new GetUserByEmailQuery(resource.email());
+        var existingUser = userQueryService.handle(existingUserQuery);
+        
+        if (existingUser.isPresent()) {
+            var user = existingUser.get();
+            
+            // If user already has the requested role or BOTH, return existing user
+            if (user.getRole() == resource.requestedRole() || user.getRole().name().equals("BOTH")) {
+                var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user);
+                return ResponseEntity.ok(userResource);
+            }
+            
+            // If user has different role, upgrade to BOTH
+            if (user.canUpgradeToRole(resource.requestedRole())) {
+                var upgradeCommand = UpgradeUserRoleCommandFromResourceAssembler.toCommandFromResource(resource);
+                var upgradedUser = userCommandService.handle(upgradeCommand);
+                
+                if (upgradedUser.isPresent()) {
+                    var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(upgradedUser.get());
+                    return ResponseEntity.ok(userResource);
+                }
+            }
+        }
+        
+        // User doesn't exist, return 404 with suggestion to register
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse("User not found", "Please register with this email first"));
+    }
+    
+    @DeleteMapping("/remove-role")
+    @Operation(summary = "Remove user role with cleanup", description = "Remove specific role from user and cleanup all related data")
+    public ResponseEntity<UserResource> removeUserRole(@RequestBody RemoveUserRoleResource resource) {
+        var removeCommand = RemoveUserRoleCommandFromResourceAssembler.toCommandFromResource(resource);
+        var user = userCommandService.handle(removeCommand);
+        
+        if (user.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
+        return ResponseEntity.ok(userResource);
+    }
+    
+    @DeleteMapping("/remove-host-role/{userId}")
+    @Operation(summary = "Remove HOST role", description = "Remove HOST role from user - cancels all parkings and related bookings")
+    public ResponseEntity<UserResource> removeHostRole(@PathVariable Long userId) {
+        var removeCommand = new RemoveUserRoleCommand(userId, UserRole.HOST);
+        var user = userCommandService.handle(removeCommand);
+        
+        if (user.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
+        return ResponseEntity.ok(userResource);
+    }
+    
+    @DeleteMapping("/remove-guest-role/{userId}")
+    @Operation(summary = "Remove GUEST role", description = "Remove GUEST role from user - cancels all bookings and deactivates vehicles")
+    public ResponseEntity<UserResource> removeGuestRole(@PathVariable Long userId) {
+        var removeCommand = new RemoveUserRoleCommand(userId, UserRole.GUEST);
+        var user = userCommandService.handle(removeCommand);
+        
+        if (user.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
+        return ResponseEntity.ok(userResource);
+    }
+    
+    // Helper class for error responses
+    public record ErrorResponse(String error, String message) {}
 }

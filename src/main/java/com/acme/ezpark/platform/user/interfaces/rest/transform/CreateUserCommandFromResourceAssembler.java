@@ -11,7 +11,8 @@ public class CreateUserCommandFromResourceAssembler {
             resource.firstName(),
             resource.lastName(),
             resource.phone(),
-            resource.birthDate()
+            resource.birthDate(),
+            resource.role()
         );
     }
 }

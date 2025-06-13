@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface ParkingRepository extends JpaRepository<Parking, Long> {
     List<Parking> findByOwnerIdAndIsActiveTrue(Long ownerId);
+    List<Parking> findByOwnerId(Long ownerId);
     
     @Query(value = """
         SELECT * FROM parkings p 

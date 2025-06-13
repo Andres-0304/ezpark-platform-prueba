@@ -122,6 +122,10 @@ public class Vehicle {
         this.updatedAt = new java.util.Date();
     }
     
+    public void deactivate() {
+        this.deactivateVehicle();
+    }
+    
     public void activateVehicle() {
         this.isActive = true;
         this.updatedAt = new java.util.Date();

@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByUserIdAndIsActiveTrue(Long userId);
+    List<Vehicle> findByUserId(Long userId);
     boolean existsByLicensePlate(String licensePlate);
 }

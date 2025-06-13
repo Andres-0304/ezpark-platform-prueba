@@ -1,5 +1,6 @@
 package com.acme.ezpark.platform.user.domain.model.aggregates;
 
+import com.acme.ezpark.platform.user.domain.model.valueobjects.UserRole;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,11 +31,14 @@ public class User {
     @Column(nullable = false, length = 100)
     private String lastName;
     
-    @Column(length = 20)
+    @Column(nullable = false, unique = true, length = 20)
     private String phone;
     
-    @Column
+    @Column(nullable = false)
     private LocalDate birthDate;
+      @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role = UserRole.GUEST; // Default role
     
     @Column(length = 255)
     private String profilePicture;
@@ -45,11 +49,11 @@ public class User {
     @Column(nullable = false)
     private Boolean isVerified = false;
     
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date createdAt;
+    @Column(nullable = false)
+    private LocalDate createdAt;
     
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date updatedAt;
+    @Column(nullable = false)
+    private LocalDate updatedAt;
     
     // Getters
     public Long getId() {
@@ -80,6 +84,10 @@ public class User {
         return birthDate;
     }
     
+    public UserRole getRole() {
+        return role;
+    }
+    
     public String getProfilePicture() {
         return profilePicture;
     }
@@ -92,24 +100,24 @@ public class User {
         return isVerified;
     }
     
-    public java.util.Date getCreatedAt() {
+    public LocalDate getCreatedAt() {
         return createdAt;
     }
     
-    public java.util.Date getUpdatedAt() {
+    public LocalDate getUpdatedAt() {
         return updatedAt;
-    }
-    
+    }    
     // Constructor
-    public User(String email, String password, String firstName, String lastName, String phone, LocalDate birthDate) {
+    public User(String email, String password, String firstName, String lastName, String phone, LocalDate birthDate, UserRole role) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
         this.birthDate = birthDate;
-        this.createdAt = new java.util.Date();
-        this.updatedAt = new java.util.Date();
+        this.role = role;
+        this.createdAt = LocalDate.now();
+        this.updatedAt = LocalDate.now();
     }
     
     // Business methods
@@ -123,32 +131,78 @@ public class User {
         this.phone = phone;
         this.birthDate = birthDate;
         this.profilePicture = profilePicture;
-        this.updatedAt = new java.util.Date();
+        this.updatedAt = LocalDate.now();
     }
     
     public void verifyUser() {
         this.isVerified = true;
-        this.updatedAt = new java.util.Date();
+        this.updatedAt = LocalDate.now();
     }
     
     public void deactivateUser() {
         this.isActive = false;
-        this.updatedAt = new java.util.Date();
+        this.updatedAt = LocalDate.now();
     }
     
     public void activateUser() {
         this.isActive = true;
-        this.updatedAt = new java.util.Date();
+        this.updatedAt = LocalDate.now();
+    }
+    
+    // Business methods for role management
+    public boolean isHost() {
+        return role == UserRole.HOST || role == UserRole.BOTH;
+    }
+    
+    public boolean isGuest() {
+        return role == UserRole.GUEST || role == UserRole.BOTH;
+    }
+    
+    public boolean canUpgradeToRole(UserRole newRole) {
+        if (this.role == newRole) {
+            return false; // Already has this role
+        }
+        return (this.role == UserRole.HOST && newRole == UserRole.GUEST) ||
+               (this.role == UserRole.GUEST && newRole == UserRole.HOST);
+    }
+    
+    public void upgradeRole(UserRole requestedRole) {
+        if (canUpgradeToRole(requestedRole)) {
+            this.role = UserRole.BOTH;
+            this.updatedAt = LocalDate.now();
+        }
+    }
+    
+    public boolean canDowngradeFromRole(UserRole roleToRemove) {
+        if (this.role == UserRole.BOTH) {
+            return roleToRemove == UserRole.HOST || roleToRemove == UserRole.GUEST;
+        }
+        return this.role == roleToRemove; // Can remove if it's the only role (deactivates user)
+    }
+    
+    public void downgradeFromRole(UserRole roleToRemove) {
+        if (this.role == UserRole.BOTH) {
+            if (roleToRemove == UserRole.HOST) {
+                this.role = UserRole.GUEST;  // Keep only GUEST
+            } else if (roleToRemove == UserRole.GUEST) {
+                this.role = UserRole.HOST;   // Keep only HOST
+            }
+            this.updatedAt = LocalDate.now();
+        } else if (this.role == roleToRemove) {
+            // If removing the only role, deactivate user completely
+            this.isActive = false;
+            this.updatedAt = LocalDate.now();
+        }
     }
     
     @PrePersist
     protected void onCreate() {
-        createdAt = new java.util.Date();
-        updatedAt = new java.util.Date();
+        createdAt = LocalDate.now();
+        updatedAt = LocalDate.now();
     }
     
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = new java.util.Date();
+        updatedAt = LocalDate.now();
     }
 }

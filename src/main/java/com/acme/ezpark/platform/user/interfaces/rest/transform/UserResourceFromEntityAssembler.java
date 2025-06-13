@@ -12,6 +12,7 @@ public class UserResourceFromEntityAssembler {
             entity.getLastName(),
             entity.getPhone(),
             entity.getBirthDate(),
+            entity.getRole(),
             entity.getProfilePicture(),
             entity.getIsActive(),
             entity.getIsVerified()

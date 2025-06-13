@@ -1,5 +1,6 @@
 package com.acme.ezpark.platform.user.interfaces.rest.resources;
 
+import com.acme.ezpark.platform.user.domain.model.valueobjects.UserRole;
 import java.time.LocalDate;
 
 public record CreateUserResource(
@@ -8,6 +9,7 @@ public record CreateUserResource(
     String firstName,
     String lastName,
     String phone,
-    LocalDate birthDate
+    LocalDate birthDate,
+    UserRole role
 ) {
 }
