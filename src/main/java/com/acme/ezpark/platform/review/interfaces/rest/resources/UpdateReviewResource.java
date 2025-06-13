@@ -1,0 +1,24 @@
+package com.acme.ezpark.platform.review.interfaces.rest.resources;
+
+import com.acme.ezpark.platform.review.domain.model.valueobjects.Rating;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+/**
+ * Update review resource
+ * This resource represents the data needed to update an existing review
+ * @author EzPark Team
+ */
+@Schema(description = "Update Review Resource")
+public record UpdateReviewResource(
+        @Schema(description = "User ID (must be the owner of the review)", example = "1", required = true)
+        @JsonProperty("user_id")
+        Long userId,
+        
+        @Schema(description = "New rating for the parking", example = "FOUR", required = true)
+        Rating rating,
+        
+        @Schema(description = "Updated comment about the parking", example = "Good parking space, but a bit expensive.")
+        String comment
+) {
+}
