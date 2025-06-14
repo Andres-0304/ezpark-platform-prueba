@@ -1,5 +1,5 @@
 # Multi-stage build for optimized production image
-FROM openjdk:24-jdk-slim AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -16,7 +16,7 @@ RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
 # Production stage
-FROM openjdk:24-jre-slim
+FROM eclipse-temurin:21-jre-alpine
 
 # Set working directory
 WORKDIR /app
@@ -24,8 +24,9 @@ WORKDIR /app
 # Copy JAR from builder stage
 COPY --from=builder /app/target/ezpark-platform-0.0.1-SNAPSHOT.jar app.jar
 
-# Create non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Create non-root user (Alpine Linux)
+RUN addgroup -g 1001 -S appuser && \
+    adduser -u 1001 -S appuser -G appuser
 RUN chown -R appuser:appuser /app
 USER appuser
 
