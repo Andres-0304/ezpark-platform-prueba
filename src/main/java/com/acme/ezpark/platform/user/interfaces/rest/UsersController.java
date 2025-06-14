@@ -72,6 +72,21 @@ public class UsersController {
         return ResponseEntity.ok(userResource);
     }
 
+    @GetMapping("/by-email/{email}")
+    @Operation(summary = "Get user by email", description = "Get user information by email address")
+    public ResponseEntity<UserResource> getUserByEmail(
+            @Parameter(description = "User email") @PathVariable String email) {
+        var getUserByEmailQuery = new GetUserByEmailQuery(email);
+        var user = userQueryService.handle(getUserByEmailQuery);
+        
+        if (user.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
+        return ResponseEntity.ok(userResource);
+    }
+
     @PutMapping("/{userId}")
     @Operation(summary = "Update user profile", description = "Update user profile information")
     public ResponseEntity<UserResource> updateUser(
