@@ -52,16 +52,22 @@ public class Parking {
     
     @Column(nullable = false)
     private Boolean isActive = true;
-    
-    @Column(length = 50)
+      @Column(length = 50)
     private String parkingType; // Covered, Uncovered, Garage
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "available_from", nullable = false)
+    private java.util.Date availableFrom;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "available_to")
+    private java.util.Date availableTo;
     
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date createdAt;
     
     @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date updatedAt;
-      // Constructor
+    private java.util.Date updatedAt;      // Constructor
     public Parking(Long ownerId, String address, BigDecimal latitude, BigDecimal longitude, 
                   BigDecimal width, BigDecimal length, BigDecimal height, BigDecimal pricePerHour,
                   String description, String parkingType) {
@@ -75,6 +81,8 @@ public class Parking {
         this.pricePerHour = pricePerHour;
         this.description = description;
         this.parkingType = parkingType;
+        this.availableFrom = new java.util.Date(); // Available from now
+        this.availableTo = null; // No end date by default
         this.createdAt = new java.util.Date();
         this.updatedAt = new java.util.Date();
     }
@@ -138,9 +146,16 @@ public class Parking {
     public java.util.Date getCreatedAt() {
         return createdAt;
     }
-    
-    public java.util.Date getUpdatedAt() {
+      public java.util.Date getUpdatedAt() {
         return updatedAt;
+    }
+    
+    public java.util.Date getAvailableFrom() {
+        return availableFrom;
+    }
+    
+    public java.util.Date getAvailableTo() {
+        return availableTo;
     }
     
     // Business methods
