@@ -12,17 +12,16 @@ import java.util.List;
 @Repository
 public interface ParkingRepository extends JpaRepository<Parking, Long> {
     List<Parking> findByOwnerIdAndIsActiveTrue(Long ownerId);
-    List<Parking> findByOwnerId(Long ownerId);
+    List<Parking> findByOwnerId(Long ownerId);    // Get all active and available parkings - we'll filter by distance in Java
+    @Query("SELECT p FROM Parking p WHERE p.isActive = true AND p.isAvailable = true")
+    List<Parking> findAllActiveAndAvailableParkings();
     
+    // Simple bounding box query that works in both MySQL and PostgreSQL
     @Query(value = """
         SELECT * FROM parkings p 
         WHERE p.is_active = true AND p.is_available = true
-        AND (6371 * acos(cos(radians(:latitude)) * cos(radians(p.latitude)) 
-        * cos(radians(p.longitude) - radians(:longitude)) 
-        + sin(radians(:latitude)) * sin(radians(p.latitude)))) <= :radiusKm
-        ORDER BY (6371 * acos(cos(radians(:latitude)) * cos(radians(p.latitude)) 
-        * cos(radians(p.longitude) - radians(:longitude)) 
-        + sin(radians(:latitude)) * sin(radians(p.latitude))))
+        AND p.latitude BETWEEN (:latitude - :radiusKm/111.0) AND (:latitude + :radiusKm/111.0)
+        AND p.longitude BETWEEN (:longitude - :radiusKm/111.0) AND (:longitude + :radiusKm/111.0)
         """, nativeQuery = true)
     List<Parking> findParkingsWithinRadius(@Param("latitude") BigDecimal latitude, 
                                           @Param("longitude") BigDecimal longitude, 
