@@ -17,9 +17,7 @@ public class ParkingCommandServiceImpl implements ParkingCommandService {
 
     public ParkingCommandServiceImpl(ParkingRepository parkingRepository) {
         this.parkingRepository = parkingRepository;
-    }
-
-    @Override
+    }    @Override
     public Optional<Parking> handle(CreateParkingCommand command) {
         var parking = new Parking(
             command.ownerId(),
@@ -31,8 +29,6 @@ public class ParkingCommandServiceImpl implements ParkingCommandService {
             command.height(),
             command.pricePerHour(),
             command.description(),
-            command.availableFrom(),
-            command.availableTo(),
             command.parkingType()
         );
 
@@ -45,8 +41,7 @@ public class ParkingCommandServiceImpl implements ParkingCommandService {
     }
 
     @Override
-    public Optional<Parking> handle(UpdateParkingCommand command) {
-        return parkingRepository.findById(command.parkingId())
+    public Optional<Parking> handle(UpdateParkingCommand command) {        return parkingRepository.findById(command.parkingId())
             .map(parking -> {
                 parking.updateParking(
                     command.address(),
@@ -55,8 +50,6 @@ public class ParkingCommandServiceImpl implements ParkingCommandService {
                     command.height(),
                     command.pricePerHour(),
                     command.description(),
-                    command.availableFrom(),
-                    command.availableTo(),
                     command.parkingType()
                 );
                 parkingRepository.save(parking);
@@ -67,14 +60,11 @@ public class ParkingCommandServiceImpl implements ParkingCommandService {
     @Override
     public boolean handle(DeleteParkingCommand command) {
         return deleteParking(command.parkingId());
-    }
-
-    @Override
+    }    @Override
     public boolean deleteParking(Long parkingId) {
         return parkingRepository.findById(parkingId)
             .map(parking -> {
-                parking.deactivateParking();
-                parkingRepository.save(parking);
+                parkingRepository.delete(parking);
                 return true;
             })
             .orElse(false);

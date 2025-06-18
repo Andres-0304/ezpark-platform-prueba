@@ -35,12 +35,15 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         } catch (Exception e) {
             return Optional.empty();
         }
-    }
-
-    @Override
+    }    @Override
     public Optional<Booking> handle(CancelBookingCommand command) {
         return bookingRepository.findById(command.bookingId())
             .map(booking -> {
+                // Validate cancellation time constraints
+                if (!booking.canBeCancelled()) {
+                    throw new RuntimeException("Cannot cancel booking - cancellation deadline has passed (must cancel at least 15 minutes before start time)");
+                }
+                
                 booking.cancelBooking(command.cancellationReason());
                 bookingRepository.save(booking);
                 return booking;

@@ -117,10 +117,8 @@ public class ParkingsController {
         
         var parkingResource = ParkingResourceFromEntityAssembler.toResourceFromEntity(parking.get());
         return ResponseEntity.ok(parkingResource);
-    }
-
-    @DeleteMapping("/parkings/{parkingId}")
-    @Operation(summary = "Delete parking", description = "Delete a parking (soft delete)")
+    }    @DeleteMapping("/parkings/{parkingId}")
+    @Operation(summary = "Delete parking", description = "Delete a parking permanently")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Parking deleted"),
             @ApiResponse(responseCode = "404", description = "Parking not found")

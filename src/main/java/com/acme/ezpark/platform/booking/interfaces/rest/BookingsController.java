@@ -151,4 +151,51 @@ public class BookingsController {
         var bookingResource = BookingResourceFromEntityAssembler.toResourceFromEntity(booking.get());
         return ResponseEntity.ok(bookingResource);
     }
+    
+    @GetMapping("/bookings/{bookingId}/cancel-info")
+    @Operation(summary = "Get booking cancellation info", description = "Get information about booking cancellation constraints")
+    public ResponseEntity<BookingCancelInfoResource> getBookingCancelInfo(
+            @Parameter(description = "Booking ID") @PathVariable Long bookingId) {
+        var getBookingByIdQuery = new GetBookingByIdQuery(bookingId);
+        var booking = bookingQueryService.handle(getBookingByIdQuery);
+        
+        if (booking.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        var bookingEntity = booking.get();
+        var cancelInfo = new BookingCancelInfoResource(
+            bookingEntity.canBeCancelled(),
+            bookingEntity.getMinutesUntilCancelDeadline(),
+            bookingEntity.getStartTime().minusMinutes(15), // Cancel deadline
+            "Must cancel at least 15 minutes before start time"
+        );
+        
+        return ResponseEntity.ok(cancelInfo);
+    }
+    
+    @GetMapping("/bookings/active")
+    @Operation(summary = "Get active bookings", description = "Get all currently active bookings (for monitoring)")
+    public ResponseEntity<List<BookingResource>> getActiveBookings() {
+        var activeBookings = bookingQueryService.getAllBookings().stream()
+            .filter(booking -> booking.getStatus() == BookingStatus.ACTIVE)
+            .map(BookingResourceFromEntityAssembler::toResourceFromEntity)
+            .toList();
+        
+        return ResponseEntity.ok(activeBookings);
+    }
+
+    @GetMapping("/parkings/{parkingId}/bookings")
+    @Operation(summary = "Get parking bookings", description = "Get all bookings for a specific parking (for hosts)")
+    public ResponseEntity<List<BookingResource>> getParkingBookings(
+            @Parameter(description = "Parking ID") @PathVariable Long parkingId) {
+        var getParkingBookingsQuery = new GetBookingsByParkingIdQuery(parkingId);
+        var bookings = bookingQueryService.handle(getParkingBookingsQuery);
+        
+        var bookingResources = bookings.stream()
+            .map(BookingResourceFromEntityAssembler::toResourceFromEntity)
+            .toList();
+        
+        return ResponseEntity.ok(bookingResources);
+    }
 }

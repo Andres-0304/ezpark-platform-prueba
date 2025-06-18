@@ -197,6 +197,84 @@ public class Booking {
         return startTime.isAfter(LocalDateTime.now()) && status != BookingStatus.CANCELLED;
     }
     
+    // New temporal business methods for automatic status management
+    
+    /**
+     * Check if booking can be cancelled (15 minutes before start time)
+     */
+    public boolean canBeCancelled() {
+        if (status == BookingStatus.CANCELLED || status == BookingStatus.COMPLETED || status == BookingStatus.EXPIRED) {
+            return false;
+        }
+        LocalDateTime cancelDeadline = startTime.minusMinutes(15);
+        return LocalDateTime.now().isBefore(cancelDeadline);
+    }
+    
+    /**
+     * Check if booking should be automatically activated (start time reached)
+     */
+    public boolean shouldBeActive() {
+        if (status != BookingStatus.CONFIRMED) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        return now.isAfter(startTime) && now.isBefore(endTime);
+    }
+    
+    /**
+     * Check if booking should be automatically completed (end time reached)
+     */
+    public boolean shouldBeCompleted() {
+        if (status != BookingStatus.ACTIVE) {
+            return false;
+        }
+        return LocalDateTime.now().isAfter(endTime);
+    }
+    
+    /**
+     * Check if booking should be expired (start time passed without activation)
+     */
+    public boolean shouldBeExpired() {
+        if (status != BookingStatus.CONFIRMED) {
+            return false;
+        }
+        // If 30 minutes passed after start time and still not active
+        LocalDateTime expireTime = startTime.plusMinutes(30);
+        return LocalDateTime.now().isAfter(expireTime);
+    }
+    
+    /**
+     * Get minutes remaining until cancellation deadline
+     */
+    public long getMinutesUntilCancelDeadline() {
+        LocalDateTime cancelDeadline = startTime.minusMinutes(15);
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isAfter(cancelDeadline)) {
+            return 0;
+        }
+        return ChronoUnit.MINUTES.between(now, cancelDeadline);
+    }
+    
+    /**
+     * Automatically update status based on current time
+     */
+    public void updateStatusBasedOnTime() {
+        if (shouldBeExpired()) {
+            this.status = BookingStatus.EXPIRED;
+            this.updatedAt = new java.util.Date();
+        } else if (shouldBeCompleted()) {
+            this.status = BookingStatus.COMPLETED;
+            this.actualEndTime = LocalDateTime.now();
+            this.updatedAt = new java.util.Date();
+        } else if (shouldBeActive()) {
+            this.status = BookingStatus.ACTIVE;
+            if (this.actualStartTime == null) {
+                this.actualStartTime = LocalDateTime.now();
+            }
+            this.updatedAt = new java.util.Date();
+        }
+    }
+    
     @PrePersist
     protected void onCreate() {
         createdAt = new java.util.Date();

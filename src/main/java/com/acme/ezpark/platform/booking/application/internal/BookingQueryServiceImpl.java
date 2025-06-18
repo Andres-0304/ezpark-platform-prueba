@@ -32,4 +32,14 @@ public class BookingQueryServiceImpl implements BookingQueryService {
     public List<Booking> handle(GetBookingsByUserIdAndStatusQuery query) {
         return bookingRepository.findByUserIdAndStatus(query.userId(), query.status());
     }
+
+    @Override
+    public List<Booking> handle(GetBookingsByParkingIdQuery query) {
+        return bookingRepository.findByParkingId(query.parkingId());
+    }
+
+    @Override
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findAll();
+    }
 }

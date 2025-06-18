@@ -1,5 +1,6 @@
 package com.acme.ezpark.platform.user.interfaces.rest;
 
+import com.acme.ezpark.platform.user.domain.model.queries.GetAllUsersQuery;
 import com.acme.ezpark.platform.user.domain.model.queries.GetUserByIdQuery;
 import com.acme.ezpark.platform.user.domain.model.queries.GetUserByEmailQuery;
 import com.acme.ezpark.platform.user.domain.model.commands.RemoveUserRoleCommand;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/users", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,10 +54,22 @@ public class UsersController {
         
         if (user.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
+        }        
         var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
         return ResponseEntity.ok(userResource);
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all users", description = "Get all users in the system")
+    public ResponseEntity<List<UserResource>> getAllUsers() {
+        var getAllUsersQuery = new GetAllUsersQuery();
+        var users = userQueryService.handle(getAllUsersQuery);
+        
+        var userResources = users.stream()
+            .map(UserResourceFromEntityAssembler::toResourceFromEntity)
+            .toList();
+            
+        return ResponseEntity.ok(userResources);
     }
 
     @GetMapping("/{userId}")

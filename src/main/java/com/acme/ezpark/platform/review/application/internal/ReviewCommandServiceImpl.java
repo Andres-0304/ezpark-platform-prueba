@@ -1,6 +1,7 @@
 package com.acme.ezpark.platform.review.application.internal;
 
 import com.acme.ezpark.platform.booking.domain.model.aggregates.Booking;
+import com.acme.ezpark.platform.booking.domain.model.valueobjects.BookingStatus;
 import com.acme.ezpark.platform.booking.infrastructure.persistence.jpa.repositories.BookingRepository;
 import com.acme.ezpark.platform.review.domain.model.aggregates.Review;
 import com.acme.ezpark.platform.review.domain.model.commands.CreateReviewCommand;
@@ -46,10 +47,8 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
             // Validate that the booking belongs to the user making the review
             if (!booking.getUserId().equals(command.userId())) {
                 throw new RuntimeException("User is not authorized to review this booking");
-            }
-            
-            // Validate that the booking is completed
-            if (!"COMPLETED".equals(booking.getStatus())) {
+            }            // Validate that the booking is completed
+            if (!booking.getStatus().equals(BookingStatus.COMPLETED)) {
                 throw new RuntimeException("Can only review completed bookings");
             }
             

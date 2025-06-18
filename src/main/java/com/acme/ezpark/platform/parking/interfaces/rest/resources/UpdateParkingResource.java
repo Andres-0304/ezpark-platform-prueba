@@ -1,7 +1,6 @@
 package com.acme.ezpark.platform.parking.interfaces.rest.resources;
 
 import java.math.BigDecimal;
-import java.time.LocalTime;
 
 public record UpdateParkingResource(
     String address,
@@ -10,8 +9,6 @@ public record UpdateParkingResource(
     BigDecimal height,
     BigDecimal pricePerHour,
     String description,
-    LocalTime availableFrom,
-    LocalTime availableTo,
     String parkingType
 ) {
 }

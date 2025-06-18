@@ -15,8 +15,6 @@ public class CreateParkingCommandFromResourceAssembler {
             resource.height(),
             resource.pricePerHour(),
             resource.description(),
-            resource.availableFrom(),
-            resource.availableTo(),
             resource.parkingType()
         );
     }

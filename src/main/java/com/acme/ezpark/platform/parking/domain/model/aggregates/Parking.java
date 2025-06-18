@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalTime;
 
 @Entity
 @Table(name = "parkings")
@@ -45,15 +44,8 @@ public class Parking {
     
     @Column(length = 1000)
     private String description;
-    
-    @Column(length = 500)
+      @Column(length = 500)
     private String imageUrl;
-    
-    @Column(nullable = false)
-    private LocalTime availableFrom;
-    
-    @Column(nullable = false)
-    private LocalTime availableTo;
     
     @Column(nullable = false)
     private Boolean isAvailable = true;
@@ -69,11 +61,10 @@ public class Parking {
     
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date updatedAt;
-    
-    // Constructor
+      // Constructor
     public Parking(Long ownerId, String address, BigDecimal latitude, BigDecimal longitude, 
                   BigDecimal width, BigDecimal length, BigDecimal height, BigDecimal pricePerHour,
-                  String description, LocalTime availableFrom, LocalTime availableTo, String parkingType) {
+                  String description, String parkingType) {
         this.ownerId = ownerId;
         this.address = address;
         this.latitude = latitude;
@@ -83,8 +74,6 @@ public class Parking {
         this.height = height;
         this.pricePerHour = pricePerHour;
         this.description = description;
-        this.availableFrom = availableFrom;
-        this.availableTo = availableTo;
         this.parkingType = parkingType;
         this.createdAt = new java.util.Date();
         this.updatedAt = new java.util.Date();
@@ -127,20 +116,11 @@ public class Parking {
         return pricePerHour;
     }
     
-    public String getDescription() {
-        return description;
+    public String getDescription() {        return description;
     }
     
     public String getImageUrl() {
         return imageUrl;
-    }
-    
-    public LocalTime getAvailableFrom() {
-        return availableFrom;
-    }
-    
-    public LocalTime getAvailableTo() {
-        return availableTo;
     }
     
     public Boolean getIsAvailable() {
@@ -176,25 +156,17 @@ public class Parking {
                    Math.sin(deltaLngRad / 2) * Math.sin(deltaLngRad / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = 6371 * c; // Earth's radius in kilometers
-        
-        return BigDecimal.valueOf(distance);
-    }
-    
-    public boolean isAvailableAtTime(LocalTime time) {
-        return time.isAfter(availableFrom) && time.isBefore(availableTo);
+          return BigDecimal.valueOf(distance);
     }
     
     public void updateParking(String address, BigDecimal width, BigDecimal length, BigDecimal height,
-                             BigDecimal pricePerHour, String description, LocalTime availableFrom,
-                             LocalTime availableTo, String parkingType) {
+                             BigDecimal pricePerHour, String description, String parkingType) {
         this.address = address;
         this.width = width;
         this.length = length;
         this.height = height;
         this.pricePerHour = pricePerHour;
         this.description = description;
-        this.availableFrom = availableFrom;
-        this.availableTo = availableTo;
         this.parkingType = parkingType;
         this.updatedAt = new java.util.Date();
     }

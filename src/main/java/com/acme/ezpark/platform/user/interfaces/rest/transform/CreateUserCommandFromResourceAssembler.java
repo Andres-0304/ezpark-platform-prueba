@@ -1,6 +1,7 @@
 package com.acme.ezpark.platform.user.interfaces.rest.transform;
 
 import com.acme.ezpark.platform.user.domain.model.commands.CreateUserCommand;
+import com.acme.ezpark.platform.user.domain.model.valueobjects.UserRole;
 import com.acme.ezpark.platform.user.interfaces.rest.resources.CreateUserResource;
 
 public class CreateUserCommandFromResourceAssembler {
