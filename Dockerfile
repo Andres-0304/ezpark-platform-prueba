@@ -18,7 +18,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:21-jre-slim
+FROM openjdk:21-jdk-slim
 
 # Set working directory
 WORKDIR /app
