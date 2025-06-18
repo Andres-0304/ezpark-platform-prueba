@@ -162,12 +162,12 @@ public class BookingsController {
         if (booking.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        
-        var bookingEntity = booking.get();
+          var bookingEntity = booking.get();
+        var cancelDeadline = bookingEntity.getStartTime().minus(15, java.time.temporal.ChronoUnit.MINUTES);
         var cancelInfo = new BookingCancelInfoResource(
             bookingEntity.canBeCancelled(),
             bookingEntity.getMinutesUntilCancelDeadline(),
-            bookingEntity.getStartTime().minusMinutes(15), // Cancel deadline
+            cancelDeadline,
             "Must cancel at least 15 minutes before start time"
         );
         
@@ -191,6 +191,21 @@ public class BookingsController {
             @Parameter(description = "Parking ID") @PathVariable Long parkingId) {
         var getParkingBookingsQuery = new GetBookingsByParkingIdQuery(parkingId);
         var bookings = bookingQueryService.handle(getParkingBookingsQuery);
+        
+        var bookingResources = bookings.stream()
+            .map(BookingResourceFromEntityAssembler::toResourceFromEntity)
+            .toList();
+        
+        return ResponseEntity.ok(bookingResources);
+    }
+
+    @GetMapping("/parkings/{parkingId}/bookings/status/{status}")
+    @Operation(summary = "Get parking bookings by status", description = "Get parking bookings filtered by status (for hosts)")
+    public ResponseEntity<List<BookingResource>> getParkingBookingsByStatus(
+            @Parameter(description = "Parking ID") @PathVariable Long parkingId,
+            @Parameter(description = "Booking Status") @PathVariable BookingStatus status) {
+        var getParkingBookingsByStatusQuery = new GetBookingsByParkingIdAndStatusQuery(parkingId, status);
+        var bookings = bookingQueryService.handle(getParkingBookingsByStatusQuery);
         
         var bookingResources = bookings.stream()
             .map(BookingResourceFromEntityAssembler::toResourceFromEntity)

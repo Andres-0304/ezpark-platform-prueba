@@ -1,14 +1,14 @@
 package com.acme.ezpark.platform.booking.domain.model.commands;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record CreateBookingCommand(
     Long userId,
     Long parkingId,
     Long vehicleId,
-    LocalDateTime startTime,
-    LocalDateTime endTime,
+    Instant startTime,
+    Instant endTime,
     BigDecimal totalPrice,
     String notes
 ) {

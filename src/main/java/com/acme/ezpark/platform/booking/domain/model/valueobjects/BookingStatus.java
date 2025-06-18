@@ -5,8 +5,7 @@ public enum BookingStatus {
     CONFIRMED("Confirmed"),
     ACTIVE("Active"),
     COMPLETED("Completed"),
-    CANCELLED("Cancelled"),
-    EXPIRED("Expired");
+    CANCELLED("Cancelled");
 
     private final String displayName;
 
@@ -16,14 +15,12 @@ public enum BookingStatus {
 
     public String getDisplayName() {
         return displayName;
-    }
-
-    public boolean canTransitionTo(BookingStatus newStatus) {
+    }    public boolean canTransitionTo(BookingStatus newStatus) {
         return switch (this) {
-            case PENDING -> newStatus == CONFIRMED || newStatus == CANCELLED || newStatus == EXPIRED;
+            case PENDING -> newStatus == CONFIRMED || newStatus == CANCELLED;
             case CONFIRMED -> newStatus == ACTIVE || newStatus == CANCELLED;
             case ACTIVE -> newStatus == COMPLETED || newStatus == CANCELLED;
-            case COMPLETED, CANCELLED, EXPIRED -> false;
+            case COMPLETED, CANCELLED -> false;
         };
     }
 }

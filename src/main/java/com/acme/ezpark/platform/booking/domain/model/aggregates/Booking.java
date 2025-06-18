@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Entity
@@ -31,16 +31,16 @@ public class Booking {
     private Long vehicleId;
     
     @Column(nullable = false)
-    private LocalDateTime startTime;
+    private Instant startTime;
     
     @Column(nullable = false)
-    private LocalDateTime endTime;
+    private Instant endTime;
     
     @Column
-    private LocalDateTime actualStartTime;
+    private Instant actualStartTime;
     
     @Column
-    private LocalDateTime actualEndTime;
+    private Instant actualEndTime;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -79,20 +79,19 @@ public class Booking {
     public Long getVehicleId() {
         return vehicleId;
     }
-    
-    public LocalDateTime getStartTime() {
+      public Instant getStartTime() {
         return startTime;
     }
     
-    public LocalDateTime getEndTime() {
+    public Instant getEndTime() {
         return endTime;
     }
     
-    public LocalDateTime getActualStartTime() {
+    public Instant getActualStartTime() {
         return actualStartTime;
     }
     
-    public LocalDateTime getActualEndTime() {
+    public Instant getActualEndTime() {
         return actualEndTime;
     }
     
@@ -123,10 +122,9 @@ public class Booking {
     public java.util.Date getUpdatedAt() {
         return updatedAt;
     }
-    
-    // Constructor
-    public Booking(Long userId, Long parkingId, Long vehicleId, LocalDateTime startTime, 
-                  LocalDateTime endTime, BigDecimal totalPrice, String notes) {
+      // Constructor
+    public Booking(Long userId, Long parkingId, Long vehicleId, Instant startTime, 
+                  Instant endTime, BigDecimal totalPrice, String notes) {
         this.userId = userId;
         this.parkingId = parkingId;
         this.vehicleId = vehicleId;
@@ -155,11 +153,10 @@ public class Booking {
             this.status = BookingStatus.CONFIRMED;
             this.updatedAt = new java.util.Date();
         }
-    }
-      public void startBooking() {
+    }    public void startBooking() {
         if (status == BookingStatus.CONFIRMED) {
             this.status = BookingStatus.ACTIVE;
-            this.actualStartTime = LocalDateTime.now();
+            this.actualStartTime = Instant.now();
             this.updatedAt = new java.util.Date();
         }
     }
@@ -167,7 +164,7 @@ public class Booking {
     public void completeBooking(BigDecimal finalPrice) {
         if (status == BookingStatus.ACTIVE) {
             this.status = BookingStatus.COMPLETED;
-            this.actualEndTime = LocalDateTime.now();
+            this.actualEndTime = Instant.now();
             this.finalPrice = finalPrice;
             this.updatedAt = new java.util.Date();
         }
@@ -184,30 +181,51 @@ public class Booking {
     public void cancel() {
         this.cancelBooking("User role removal - automatic cancellation");
     }
-    
-    public boolean isActive() {
+      public boolean isActive() {
         return status == BookingStatus.CONFIRMED || status == BookingStatus.ACTIVE;
     }
     
     public boolean isPast() {
-        return endTime.isBefore(LocalDateTime.now()) || status == BookingStatus.COMPLETED;
+        return endTime.isBefore(Instant.now()) || status == BookingStatus.COMPLETED;
     }
     
     public boolean isFuture() {
-        return startTime.isAfter(LocalDateTime.now()) && status != BookingStatus.CANCELLED;
+        return startTime.isAfter(Instant.now()) && status != BookingStatus.CANCELLED;
     }
     
     // New temporal business methods for automatic status management
     
     /**
-     * Check if booking can be cancelled (15 minutes before start time)
+     * Check if booking can be cancelled (only PENDING status and 15 minutes before start time)
      */
     public boolean canBeCancelled() {
-        if (status == BookingStatus.CANCELLED || status == BookingStatus.COMPLETED || status == BookingStatus.EXPIRED) {
+        if (status != BookingStatus.PENDING) {
             return false;
         }
-        LocalDateTime cancelDeadline = startTime.minusMinutes(15);
-        return LocalDateTime.now().isBefore(cancelDeadline);
+        Instant cancelDeadline = startTime.minus(15, ChronoUnit.MINUTES);
+        return Instant.now().isBefore(cancelDeadline);
+    }
+    
+    /**
+     * Get minutes until cancel deadline
+     */
+    public long getMinutesUntilCancelDeadline() {
+        if (!canBeCancelled()) {
+            return 0;
+        }
+        Instant cancelDeadline = startTime.minus(15, ChronoUnit.MINUTES);
+        return ChronoUnit.MINUTES.between(Instant.now(), cancelDeadline);
+    }
+    
+    /**
+     * Check if booking should be automatically confirmed (15 minutes before start time)
+     */
+    public boolean shouldBeConfirmed() {
+        if (status != BookingStatus.PENDING) {
+            return false;
+        }
+        Instant confirmTime = startTime.minus(15, ChronoUnit.MINUTES);
+        return Instant.now().isAfter(confirmTime);
     }
     
     /**
@@ -217,10 +235,9 @@ public class Booking {
         if (status != BookingStatus.CONFIRMED) {
             return false;
         }
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         return now.isAfter(startTime) && now.isBefore(endTime);
-    }
-    
+    }    
     /**
      * Check if booking should be automatically completed (end time reached)
      */
@@ -228,49 +245,24 @@ public class Booking {
         if (status != BookingStatus.ACTIVE) {
             return false;
         }
-        return LocalDateTime.now().isAfter(endTime);
-    }
-    
-    /**
-     * Check if booking should be expired (start time passed without activation)
-     */
-    public boolean shouldBeExpired() {
-        if (status != BookingStatus.CONFIRMED) {
-            return false;
-        }
-        // If 30 minutes passed after start time and still not active
-        LocalDateTime expireTime = startTime.plusMinutes(30);
-        return LocalDateTime.now().isAfter(expireTime);
-    }
-    
-    /**
-     * Get minutes remaining until cancellation deadline
-     */
-    public long getMinutesUntilCancelDeadline() {
-        LocalDateTime cancelDeadline = startTime.minusMinutes(15);
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(cancelDeadline)) {
-            return 0;
-        }
-        return ChronoUnit.MINUTES.between(now, cancelDeadline);
+        return Instant.now().isAfter(endTime);
     }
     
     /**
      * Automatically update status based on current time
      */
     public void updateStatusBasedOnTime() {
-        if (shouldBeExpired()) {
-            this.status = BookingStatus.EXPIRED;
-            this.updatedAt = new java.util.Date();
-        } else if (shouldBeCompleted()) {
+        if (shouldBeCompleted()) {
             this.status = BookingStatus.COMPLETED;
-            this.actualEndTime = LocalDateTime.now();
-            this.updatedAt = new java.util.Date();
-        } else if (shouldBeActive()) {
+            this.actualEndTime = Instant.now();
+            this.updatedAt = new java.util.Date();        } else if (shouldBeActive()) {
             this.status = BookingStatus.ACTIVE;
             if (this.actualStartTime == null) {
-                this.actualStartTime = LocalDateTime.now();
+                this.actualStartTime = Instant.now();
             }
+            this.updatedAt = new java.util.Date();
+        } else if (shouldBeConfirmed()) {
+            this.status = BookingStatus.CONFIRMED;
             this.updatedAt = new java.util.Date();
         }
     }

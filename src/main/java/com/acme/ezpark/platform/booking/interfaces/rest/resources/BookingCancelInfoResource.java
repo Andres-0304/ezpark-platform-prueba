@@ -1,6 +1,6 @@
 package com.acme.ezpark.platform.booking.interfaces.rest.resources;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Resource for booking cancellation information
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record BookingCancelInfoResource(
     Boolean canCancel,
     Long minutesUntilDeadline,
-    LocalDateTime cancelDeadline,
+    Instant cancelDeadline,
     String message
 ) {
 }

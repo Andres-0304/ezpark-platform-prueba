@@ -11,5 +11,6 @@ public interface BookingQueryService {
     List<Booking> handle(GetBookingsByUserIdQuery query);
     List<Booking> handle(GetBookingsByUserIdAndStatusQuery query);
     List<Booking> handle(GetBookingsByParkingIdQuery query);
+    List<Booking> handle(GetBookingsByParkingIdAndStatusQuery query);
     List<Booking> getAllBookings();
 }
