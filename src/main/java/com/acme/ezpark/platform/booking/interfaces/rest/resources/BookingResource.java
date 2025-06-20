@@ -16,7 +16,6 @@ public record BookingResource(
     Instant actualEndTime,
     BookingStatus status,
     BigDecimal totalPrice,
-    BigDecimal finalPrice,
     String notes,
     String cancellationReason
 ) {

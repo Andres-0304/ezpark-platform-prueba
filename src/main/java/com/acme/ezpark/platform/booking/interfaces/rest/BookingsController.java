@@ -118,14 +118,11 @@ public class BookingsController {
         
         var bookingResource = BookingResourceFromEntityAssembler.toResourceFromEntity(booking.get());
         return ResponseEntity.ok(bookingResource);
-    }
-
-    @PutMapping("/bookings/{bookingId}/complete")
+    }    @PutMapping("/bookings/{bookingId}/complete")
     @Operation(summary = "Complete booking", description = "Complete an in-progress booking")
     public ResponseEntity<BookingResource> completeBooking(
-            @Parameter(description = "Booking ID") @PathVariable Long bookingId,
-            @RequestBody CompleteBookingResource resource) {
-        var completeBookingCommand = new CompleteBookingCommand(bookingId, resource.finalPrice());
+            @Parameter(description = "Booking ID") @PathVariable Long bookingId) {
+        var completeBookingCommand = new CompleteBookingCommand(bookingId);
         var booking = bookingCommandService.handle(completeBookingCommand);
         
         if (booking.isEmpty()) {
