@@ -11,6 +11,9 @@ COPY mvnw.cmd .
 COPY .mvn .mvn
 COPY pom.xml .
 
+# Give execution permissions to mvnw
+RUN chmod +x ./mvnw
+
 # Download dependencies (this layer will be cached if pom.xml doesn't change)
 RUN ./mvnw dependency:go-offline -B
 
@@ -18,7 +21,7 @@ RUN ./mvnw dependency:go-offline -B
 COPY src src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests -B
+RUN chmod +x ./mvnw && ./mvnw clean package -DskipTests -B
 
 # Stage 2: Run the application
 FROM eclipse-temurin:21-jre-jammy
