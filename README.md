@@ -56,7 +56,6 @@ src/main/java/com/acme/ezpark/platform/
 ### 📋 Endpoints Principales
 
 - `GET /actuator/health` - Health check
-- `GET /api/health` - Custom health endpoint
 - `GET /h2-console` - H2 database console
 
 ### 🛠️ Desarrollo
