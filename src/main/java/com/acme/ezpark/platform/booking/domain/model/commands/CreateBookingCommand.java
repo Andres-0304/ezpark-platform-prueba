@@ -9,7 +9,6 @@ public record CreateBookingCommand(
     Long vehicleId,
     Instant startTime,
     Instant endTime,
-    BigDecimal totalPrice,
     String notes
 ) {
 }

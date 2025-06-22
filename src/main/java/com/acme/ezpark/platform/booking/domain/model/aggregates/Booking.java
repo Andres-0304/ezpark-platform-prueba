@@ -45,12 +45,8 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.PENDING;
-    
-    @Column(nullable = false, precision = 10, scale = 2)
+      @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
-    
-    @Column(precision = 10, scale = 2)
-    private BigDecimal finalPrice;
     
     @Column(length = 1000)
     private String notes;
@@ -98,13 +94,8 @@ public class Booking {
     public BookingStatus getStatus() {
         return status;
     }
-    
-    public BigDecimal getTotalPrice() {
+      public BigDecimal getTotalPrice() {
         return totalPrice;
-    }
-    
-    public BigDecimal getFinalPrice() {
-        return finalPrice;
     }
     
     public String getNotes() {
@@ -121,22 +112,29 @@ public class Booking {
     
     public java.util.Date getUpdatedAt() {
         return updatedAt;
-    }
-      // Constructor
+    }    // Constructor
     public Booking(Long userId, Long parkingId, Long vehicleId, Instant startTime, 
-                  Instant endTime, BigDecimal totalPrice, String notes) {
+                  Instant endTime, BigDecimal pricePerHour, String notes) {
         this.userId = userId;
         this.parkingId = parkingId;
         this.vehicleId = vehicleId;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.totalPrice = totalPrice;
+        this.totalPrice = calculateTotalPrice(startTime, endTime, pricePerHour);
         this.notes = notes;
         this.createdAt = new java.util.Date();
         this.updatedAt = new java.util.Date();
     }
+      // Business methods
+    private BigDecimal calculateTotalPrice(Instant startTime, Instant endTime, BigDecimal pricePerHour) {
+        long hours = ChronoUnit.HOURS.between(startTime, endTime);
+        // If less than 1 hour, charge for 1 hour minimum
+        if (hours == 0) {
+            hours = 1;
+        }
+        return pricePerHour.multiply(BigDecimal.valueOf(hours));
+    }
     
-    // Business methods
     public long getBookedHours() {
         return ChronoUnit.HOURS.between(startTime, endTime);
     }
@@ -160,12 +158,10 @@ public class Booking {
             this.updatedAt = new java.util.Date();
         }
     }
-    
-    public void completeBooking(BigDecimal finalPrice) {
+      public void completeBooking() {
         if (status == BookingStatus.ACTIVE) {
             this.status = BookingStatus.COMPLETED;
             this.actualEndTime = Instant.now();
-            this.finalPrice = finalPrice;
             this.updatedAt = new java.util.Date();
         }
     }

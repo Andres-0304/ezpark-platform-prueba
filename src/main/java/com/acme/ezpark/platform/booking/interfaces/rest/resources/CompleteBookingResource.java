@@ -1,8 +1,6 @@
 package com.acme.ezpark.platform.booking.interfaces.rest.resources;
 
-import java.math.BigDecimal;
-
-public record CompleteBookingResource(
-    BigDecimal finalPrice
-) {
+// This resource is no longer needed since finalPrice is not required
+// Booking completion is now handled without additional parameters
+public record CompleteBookingResource() {
 }

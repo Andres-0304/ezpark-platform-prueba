@@ -1,6 +1,5 @@
 package com.acme.ezpark.platform.review.interfaces.rest.resources;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -11,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Delete Review Resource")
 public record DeleteReviewResource(
         @Schema(description = "User ID (must be the owner of the review)", example = "1", required = true)
-        @JsonProperty("user_id")
         Long userId
 ) {
 }

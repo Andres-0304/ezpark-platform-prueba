@@ -70,14 +70,12 @@ public class BookingStatusScheduler {
                     logger.info("Booking {} transitioned from {} to {} at {}", 
                         booking.getId(), originalStatus, booking.getStatus(), now);
                 }
-            }
-
-            // 3. ACTIVE → COMPLETED (at end time)
+            }            // 3. ACTIVE → COMPLETED (at end time)
             List<Booking> activeBookings = bookingRepository.findByStatus(BookingStatus.ACTIVE);
             for (Booking booking : activeBookings) {
                 if (booking.shouldBeCompleted()) {
                     BookingStatus originalStatus = booking.getStatus();
-                    booking.completeBooking(booking.getTotalPrice()); // Use original total price as final price
+                    booking.completeBooking();
                     bookingRepository.save(booking);
                     updatedCount++;
                     logger.info("Booking {} transitioned from {} to {} at {}", 
