@@ -3,6 +3,8 @@ services:
     name: ezpark-platform
     env: java
     plan: free
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/ezpark-platform-*.jar
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: gcp
