@@ -3,6 +3,7 @@ services:
     name: ezpark-platform
     env: java
     plan: free
+    runtime: java
     buildCommand: mvn clean package -DskipTests
     startCommand: java -jar target/ezpark-platform-*.jar
     envVars:
