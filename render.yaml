@@ -11,7 +11,7 @@ services:
       sdk use java 21.0.1-tem
       sdk default java 21.0.1-tem
       mvn clean package -DskipTests
-    startCommand: source ~/.sdkman/bin/sdkman-init.sh && sdk use java 21.0.1-tem && java -Dserver.port=$PORT -Xmx512m -Dspring.profiles.active=gcp -jar target/ezpark-platform-0.0.1-SNAPSHOT.jar
+    startCommand: chmod +x start.sh && ./start.sh
     healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
