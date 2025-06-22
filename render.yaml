@@ -3,11 +3,17 @@ services:
     name: ezpark-platform
     env: java
     plan: free
-    runtime: java
     buildCommand: mvn clean package -DskipTests
     startCommand: java -jar target/ezpark-platform-*.jar
+    healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: gcp
       - key: PORT
         value: 10000
+      - key: DATABASE_URL
+        value: jdbc:postgresql://34.61.141.252:5432/ezpark_platform
+      - key: DB_USERNAME
+        value: ezpark_user
+      - key: DB_PASSWORD
+        value: ")oa]mVy@%rd6\\$[*"
