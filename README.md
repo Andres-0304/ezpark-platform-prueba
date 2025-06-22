@@ -1,5 +1,22 @@
 # EzPark Platform - Backend
 
+## 🚀 Despliegue en Render + Google Cloud SQL
+
+### Configuración Multi-entorno:
+- **Desarrollo Local**: MySQL (`application.properties`)
+- **Producción (Render)**: PostgreSQL en Google Cloud SQL (`application-prod.properties`)
+- **Docker**: Configurado para despliegue automático en Render
+
+### Variables de entorno en Render:
+```
+SPRING_PROFILES_ACTIVE=prod
+DB_HOST=34.61.141.252
+DB_PORT=5432
+DB_NAME=ezpark-db
+DB_USERNAME=ezpark_user
+DB_PASSWORD=[configurado-en-render]
+```
+
 ## Configuración para Desarrollo Local
 
 ### 🚀 Inicio Rápido
