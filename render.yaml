@@ -3,20 +3,8 @@ services:
     name: ezpark-platform
     env: java
     plan: free
-    buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: chmod +x start.sh && ./start.sh
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: prod
+        value: gcp
       - key: PORT
         value: 10000
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ezpark-db
-          property: connectionString
-
-databases:
-  - name: ezpark-db
-    databaseName: ezpark_platform
-    user: ezpark_user
-    plan: free
