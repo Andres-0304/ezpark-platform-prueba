@@ -3,8 +3,15 @@ services:
     name: ezpark-platform-final
     env: java
     plan: free
-    buildCommand: mvn clean package -DskipTests
-    startCommand: chmod +x start.sh && ./start.sh
+    buildCommand: |
+      curl -s https://get.sdkman.io | bash
+      source ~/.sdkman/bin/sdkman-init.sh
+      sdk install java 21.0.1-tem
+      sdk install maven 3.9.6
+      sdk use java 21.0.1-tem
+      sdk default java 21.0.1-tem
+      mvn clean package -DskipTests
+    startCommand: source ~/.sdkman/bin/sdkman-init.sh && sdk use java 21.0.1-tem && java -Dserver.port=$PORT -Xmx512m -Dspring.profiles.active=gcp -jar target/ezpark-platform-0.0.1-SNAPSHOT.jar
     healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
