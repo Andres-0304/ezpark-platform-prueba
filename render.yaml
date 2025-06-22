@@ -1,10 +1,10 @@
 services:
   - type: web
     name: ezpark-platform-final
-    env: java
+    env: node
     plan: free
-    buildCommand: mvn clean package -DskipTests
-    startCommand: java -Dserver.port=$PORT -Xmx512m -Dspring.profiles.active=gcp -jar target/ezpark-platform-0.0.1-SNAPSHOT.jar
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: chmod +x run.sh && ./run.sh
     healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE

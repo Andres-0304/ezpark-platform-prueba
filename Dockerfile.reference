@@ -1,0 +1,17 @@
+# Dockerfile for reference (not used in Render deployment)
+FROM openjdk:21-jdk-slim
+
+WORKDIR /app
+
+# Copy the JAR file
+COPY target/ezpark-platform-0.0.1-SNAPSHOT.jar app.jar
+
+# Set environment variables
+ENV SPRING_PROFILES_ACTIVE=gcp
+ENV PORT=10000
+
+# Expose port
+EXPOSE 10000
+
+# Run the application
+CMD ["java", "-Dserver.port=${PORT}", "-Xmx512m", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "app.jar"]
